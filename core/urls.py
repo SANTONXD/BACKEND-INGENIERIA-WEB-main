@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.http import JsonResponse
 
-# 👇 Vista simple para la raíz del proyecto
+# 👇 Vista simple para probar que el backend funciona
 def home(request):
     return JsonResponse({
         "status": "ok",
@@ -10,7 +10,7 @@ def home(request):
     })
 
 urlpatterns = [
-    path('', home, name='home'),  # ✅ Página de inicio
     path('admin/', admin.site.urls),
-    path('', include('contacto.urls')),
+    path('', home, name='home'),              # raíz
+    path('api/', include('contacto.urls')),   # 👈 prefijo para la app de contacto
 ]
