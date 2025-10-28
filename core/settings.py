@@ -80,8 +80,10 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://ingenieria-web-amber.vercel.app",          # frontend
-    "https://backend-ingenieria-web-main.onrender.com", # backend en Render (sin / final)
+    "https://ingenieria-web-amber.vercel.app",
+    "https://www.ingenieria-web-amber.vercel.app",
+    "https://backend-ingenieria-web-main.onrender.com",
+    "https://www.backend-ingenieria-web-main.onrender.com",
 ]
 
 CORS_ALLOW_CREDENTIALS = True  # 👈 necesario si el frontend envía cookies o tokens
@@ -124,3 +126,4 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.JSONParser',
     ]
 }
+
