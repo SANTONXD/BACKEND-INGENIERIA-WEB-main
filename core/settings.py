@@ -1,16 +1,17 @@
 from pathlib import Path
 import os
-import dj_database_url  # 👈 importante: asegúrate de tenerlo en requirements.txt
+import dj_database_url  # 👈 asegúrate de que está en requirements.txt
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# --- CONFIGURACIÓN GENERAL ---
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-reemplaza-esto')
 
-# 🔒 En Render, debe ser False para producción
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-# Render genera automáticamente un hostname, por eso usamos *
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    '*',  # Puedes dejarlo así en Render; Render usa subdominios dinámicos
+]
 
 
 # --- APPS INSTALADAS ---
@@ -22,18 +23,20 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    # Terceros
     'rest_framework',
     'corsheaders',
 
+    # Tus apps
     'contacto',
 ]
 
 
 # --- MIDDLEWARE ---
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # 👈 debe ir arriba
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # 👈 necesario para servir estáticos en Render
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # 👈 importante para servir estáticos
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -63,7 +66,6 @@ TEMPLATES = [
 
 
 # --- BASE DE DATOS ---
-# Render provee DATABASE_URL como variable de entorno
 DATABASES = {
     'default': dj_database_url.config(
         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
@@ -78,21 +80,26 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://ingenieria-web-amber.vercel.app",  # frontend
-    "https://backend-ingenieria-web-main.onrender.com/",    # backend en Render (ajusta con tu URL real)
+    "https://ingenieria-web-amber.vercel.app",          # frontend
+    "https://backend-ingenieria-web-main.onrender.com", # backend en Render (sin / final)
 ]
+
+CORS_ALLOW_CREDENTIALS = True  # 👈 necesario si el frontend envía cookies o tokens
+
 
 # --- ARCHIVOS ESTÁTICOS ---
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
-
-# WhiteNoise configuración (sirve archivos estáticos sin servidor externo)
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
-# --- LOGGING OPCIONAL ---
-# Esto ayuda a depurar errores si Render falla
+# --- ARCHIVOS MEDIA (si los llegas a usar) ---
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / "media"
+
+
+# --- LOGGING (para depuración) ---
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -107,3 +114,13 @@ LOGGING = {
     },
 }
 
+
+# --- REST FRAMEWORK CONFIG OPCIONAL ---
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',
+    ]
+}
