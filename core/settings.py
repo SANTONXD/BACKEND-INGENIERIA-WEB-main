@@ -72,13 +72,15 @@ DATABASES = {
 }
 
 
-# --- CORS & CSRF ---
-CORS_ALLOW_ALL_ORIGINS = True  # 👈 más simple para pruebas; luego puedes restringirlo
-
-CSRF_TRUSTED_ORIGINS = [
-    'https://tu-nombre-de-app.onrender.com',
+# --- CORS & CSRF CONFIG ---
+CORS_ALLOWED_ORIGINS = [
+    "https://ingenieria-web-amber.vercel.app",  # frontend en Vercel
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://ingenieria-web-amber.vercel.app",  # frontend
+    "https://backend-ingenieria-web-main.onrender.com/",    # backend en Render (ajusta con tu URL real)
+]
 
 # --- ARCHIVOS ESTÁTICOS ---
 STATIC_URL = '/static/'
@@ -104,3 +106,4 @@ LOGGING = {
         'level': 'INFO',
     },
 }
+
