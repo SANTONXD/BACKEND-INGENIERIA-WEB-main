@@ -1,11 +1,15 @@
 from pathlib import Path
+import os
+import dj_database_url  # 👈 importante: asegúrate de tenerlo en requirements.txt
 
-# --- BASE CONFIG ---
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-xxxxx'  # reemplaza por tu clave real
-DEBUG = True
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-reemplaza-esto')
 
+# 🔒 En Render, debe ser False para producción
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+
+# Render genera automáticamente un hostname, por eso usamos *
 ALLOWED_HOSTS = ['*']
 
 
@@ -27,8 +31,9 @@ INSTALLED_APPS = [
 
 # --- MIDDLEWARE ---
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',  # 👈 debe ir primero
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # 👈 necesario para servir estáticos en Render
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -38,12 +43,12 @@ MIDDLEWARE = [
 ]
 
 
+ROOT_URLCONF = 'core.urls'
 
-# --- TEMPLATES ---
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],  # Carpeta opcional para tus plantillas personalizadas
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -56,28 +61,46 @@ TEMPLATES = [
     },
 ]
 
-ROOT_URLCONF = 'core.urls'
 
-# --- CORS & CSRF CONFIG ---
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5500",
-    "http://127.0.0.1:5500",
-]
+# --- BASE DE DATOS ---
+# Render provee DATABASE_URL como variable de entorno
+DATABASES = {
+    'default': dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=600,
+    )
+}
 
+
+# --- CORS & CSRF ---
+CORS_ALLOW_ALL_ORIGINS = True  # 👈 más simple para pruebas; luego puedes restringirlo
 
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:5500",
-    "http://127.0.0.1:5500",
+    'https://tu-nombre-de-app.onrender.com',
 ]
 
-# --- ARCHIVOS ESTÁTICOS ---
-STATIC_URL = 'static/'
-STATICFILES_DIRS = [BASE_DIR / "static"]
 
-# --- BASE DE DATOS (ejemplo por defecto SQLite) ---
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+# --- ARCHIVOS ESTÁTICOS ---
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# WhiteNoise configuración (sirve archivos estáticos sin servidor externo)
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+
+# --- LOGGING OPCIONAL ---
+# Esto ayuda a depurar errores si Render falla
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
 }
